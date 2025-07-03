@@ -16,7 +16,6 @@
             --primary-color: #00796B; --secondary-color: #FFC107; --danger-color: #D32F2F;
             --light-bg: #F4F6F8; --white-bg: #FFFFFF; --dark-text: #333333;
             --muted-text: #6c757d; --border-color: #e0e0e0; --font-family: 'Poppins', sans-serif;
-            --pending-color: #ff9800;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background-color: var(--light-bg); color: var(--dark-text); font-family: var(--font-family); line-height: 1.6; padding: 20px; }
@@ -29,18 +28,13 @@
         .btn-danger { background-color: var(--danger-color); color: white; }
         .btn-sm { padding: 8px 16px; font-size: 14px; }
         .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; margin-bottom: 30px; position: relative; }
-        .sync-status { font-size: 14px; color: var(--muted-text); display: flex; align-items: center; gap: 8px; position: absolute; left: 0; }
-        .sync-status .fa-spin { color: var(--primary-color); }
-        .sync-status.offline .fa-cloud { color: var(--danger-color); }
-        .sync-status.synced .fa-cloud-check { color: var(--primary-color); }
         .header-content { text-align: center; flex-grow: 1; }
         .header h1 { font-size: 36px; font-weight: 600; color: var(--dark-text); margin-bottom: 10px; }
         .header-content p { font-size: 18px; color: var(--muted-text); }
         .back-btn, .logout-btn { background: #fff; border: 1px solid var(--border-color); color: var(--muted-text); border-radius: 8px; height: 40px; padding: 0 15px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
         .back-btn:hover, .logout-btn:hover { background: var(--primary-color); color: white; border-color: var(--primary-color); }
         .page { display: none; } .page.active { display: block; }
-        .crn-item { border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; margin-bottom: 15px; background-color: #fdfdfd; transition: all 0.2s ease-out; position: relative; }
-        .crn-item.pending-sync::after { content: '⏳ قيد المزامنة'; position: absolute; top: 10px; left: 10px; background: var(--pending-color); color: white; padding: 4px 10px; border-radius: 15px; font-size: 12px; font-weight: 500; }
+        .crn-item { border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; margin-bottom: 15px; background-color: #fdfdfd; transition: all 0.2s ease-out; }
         .crn-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
         .crn-id { font-weight: 600; font-size: 20px; color: var(--primary-color); }
         .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 500; border: 1px solid; }
@@ -76,9 +70,10 @@
         .issue-row { background-color: #ffebee !important; }
         .button-group-ux { display: flex; flex-direction: column; gap: 20px; margin-top: 20px; }
         .data-management-buttons { display: flex; flex-direction: row; justify-content: center; gap: 15px; flex-wrap: wrap;}
-        .btn-ux { display: flex; align-items: center; justify-content: flex-start; padding: 20px 25px; font-size: 18px; border-radius: 12px; text-align: right; }
+        .btn-ux { display: flex; align-items: center; justify-content: space-between; padding: 20px 25px; font-size: 18px; border-radius: 12px; text-align: right; }
         .btn-ux-icon { margin-left: 15px; }
         .btn-ux-text { flex-grow: 1; }
+        .btn-ux-badge { background-color: rgba(255, 255, 255, 0.2); padding: 5px 12px; border-radius: 20px; font-weight: 600; font-size: 16px; min-width: 40px; text-align: center; }
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 25px; }
         .stat-card { background-color: #fff; padding: 20px; border-radius: 12px; text-align: center; border: 1px solid var(--border-color); }
         .stat-icon { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; margin: 0 auto 15px; }
@@ -102,26 +97,22 @@
         <!-- Home Page (for Office/Field users) -->
         <div id="home-page" class="page">
             <div class="header">
-                <div class="sync-status" id="sync-status"><i class="fas fa-cloud"></i> <span>جاري التحقق...</span></div>
                 <div><button class="logout-btn"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</button></div>
                 <div class="header-content"><h1><i class="fas fa-fire"></i> Gas CRN Tracker</h1><p>نظام متابعة وتأكيد توصيل الغاز الطبيعي للمباني</p></div>
                 <div style="width:110px"></div>
             </div>
             <div class="card">
                 <h2 style="text-align: center; margin-bottom: 25px; font-weight: 600;">اختر واجهة المستخدم</h2>
-                <!-- FIX: Removed the count badge from buttons -->
                 <div class="button-group-ux">
-                    <button id="office-btn" class="btn btn-primary btn-ux" onclick="showPage('main-page', 'office')"><span class="btn-ux-icon"><i class="fas fa-building"></i></span><span class="btn-ux-text">المطلوب من المكتب</span></button>
-                    <button id="field-btn" class="btn btn-secondary btn-ux" onclick="showPage('main-page', 'field')"><span class="btn-ux-icon"><i class="fas fa-hard-hat"></i></span><span class="btn-ux-text">المطلوب من الموقع</span></button>
+                    <button id="office-btn" class="btn btn-primary btn-ux" onclick="showPage('main-page', 'office')"><span class="btn-ux-icon"><i class="fas fa-building"></i></span><span class="btn-ux-text">المطلوب من المكتب</span><span id="office-task-count" class="btn-ux-badge">...</span></button>
+                    <button id="field-btn" class="btn btn-secondary btn-ux" onclick="showPage('main-page', 'field')"><span class="btn-ux-icon"><i class="fas fa-hard-hat"></i></span><span class="btn-ux-text">المطلوب من الموقع</span><span id="field-task-count" class="btn-ux-badge">...</span></button>
                 </div>
             </div>
         </div>
         
         <!-- Main Task Page (for Office/Field users) -->
         <div id="main-page" class="page">
-             <div class="header">
-                 <div class="sync-status" id="main-sync-status"><i class="fas fa-cloud"></i> <span>جاري التحقق...</span></div>
-                 <button class="back-btn" onclick="showPage('home-page')"><i class="fas fa-arrow-right"></i> العودة</button><div class="header-content"><h1 id="user-type-label">مهام المستخدم</h1></div><div style="width: 100px;"></div></div>
+             <div class="header"><button class="back-btn" onclick="showPage('home-page')"><i class="fas fa-arrow-right"></i> العودة</button><div class="header-content"><h1 id="user-type-label">مهام المستخدم</h1></div><div style="width: 100px;"></div></div>
             <div class="filter-section">
                 <div class="filter-header">
                     <div class="filter-title"><i class="fas fa-filter"></i> تصفية المباني</div>
@@ -256,23 +247,21 @@
             appId:"1:534942328377:web:70079093f1a6cd67568fe8",
             measurementId: "G-4W4HVQ5046"
         };
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const database = getDatabase(app);
-        
-        let currentUserRole = 'user';
         
         onAuthStateChanged(auth, user => {
             const loadingOverlay = document.getElementById('loading-overlay');
             const mainContainer = document.querySelector('.container');
             if (user) {
                 get(ref(database, 'users/' + user.uid)).then((snapshot) => {
-                    currentUserRole = snapshot.exists() ? snapshot.val() : 'user';
+                    const userRole = snapshot.exists() ? snapshot.val() : 'user';
                     loadingOverlay.style.display = 'none';
                     mainContainer.style.display = 'block';
-                    configureUIForRole(currentUserRole);
+                    configureUIForRole(userRole);
                     loadInitialData();
-                    initializeOfflineSync();
                 });
             } else {
                 window.location.href = 'login.html'; 
@@ -285,98 +274,19 @@
             else {
                 showPage('home-page');
                 const officeBtn = document.getElementById('office-btn'), fieldBtn = document.getElementById('field-btn');
-                officeBtn.style.display = (role === 'office' || role === 'admin') ? 'flex' : 'none';
-                fieldBtn.style.display = (role === 'field' || role === 'admin') ? 'flex' : 'none';
-                
-                if (role !== 'office' && role !== 'field' && role !== 'admin') { 
+                if (role === 'office') {
+                    if (officeBtn) officeBtn.style.display = 'flex';
+                    if (fieldBtn) fieldBtn.style.display = 'flex';
+                } else if (role === 'field') {
+                    if (officeBtn) officeBtn.style.display = 'none';
+                    if (fieldBtn) fieldBtn.style.display = 'flex';
+                } else { 
+                    if (officeBtn) officeBtn.style.display = 'none';
+                    if (fieldBtn) fieldBtn.style.display = 'none';
                     const homeCard = document.querySelector('#home-page .card');
                     if(homeCard) homeCard.innerHTML = `<h2 style="text-align:center;">ليس لديك دور محدد.</h2><p style="text-align:center;">يرجى التواصل مع المدير.</p>`;
                 }
             }
-        }
-        
-        let isSyncing = false;
-        const OFFLINE_QUEUE_KEY = 'gas-crn-offline-queue';
-
-        function getOfflineQueue() {
-            return JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || '[]');
-        }
-
-        function saveOfflineQueue(queue) {
-            localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
-        }
-
-        async function syncQueuedUpdates() {
-            if (isSyncing || !navigator.onLine) {
-                updateSyncStatusUI();
-                return;
-            }
-            let queue = getOfflineQueue();
-            if (queue.length === 0) {
-                updateSyncStatusUI(true);
-                return;
-            }
-
-            isSyncing = true;
-            updateSyncStatusUI();
-
-            const updatesToSync = { ...queue[0].data };
-            const itemDbKey = queue[0].db_key;
-            
-            try {
-                await update(ref(database), updatesToSync);
-                queue.shift(); 
-                saveOfflineQueue(queue);
-                console.log(`Successfully synced batch ${itemDbKey}.`);
-            } catch (error) {
-                console.error(`Sync failed for batch ${itemDbKey}:`, error);
-            } finally {
-                isSyncing = false;
-                if (queue.length > 0) {
-                    setTimeout(syncQueuedUpdates, 1000); 
-                } else {
-                    updateSyncStatusUI(true);
-                }
-            }
-        }
-        
-        function queueUpdate(db_key, updateData) {
-            let queue = getOfflineQueue();
-            const updates = {};
-            updates[`/buildings/${db_key}`] = updateData;
-            
-            queue.push({ db_key: db_key + '_' + Date.now(), data: updates });
-            saveOfflineQueue(queue);
-            
-            const buildingIndex = buildingsData.findIndex(b => b.db_key === db_key);
-            if(buildingIndex > -1) {
-                Object.assign(buildingsData[buildingIndex], updateData);
-                refreshAllViews();
-            }
-            
-            syncQueuedUpdates();
-        }
-
-        function updateSyncStatusUI(isSynced = false) {
-            const statusElements = document.querySelectorAll('.sync-status');
-            let html;
-            if (!navigator.onLine) {
-                html = `<i class="fas fa-cloud offline"></i> <span>غير متصل</span>`;
-            } else if (isSyncing) {
-                html = `<i class="fas fa-sync-alt fa-spin"></i> <span>جاري المزامنة...</span>`;
-            } else if (getOfflineQueue().length > 0) {
-                html = `<i class="fas fa-cloud-upload-alt"></i> <span>${getOfflineQueue().length} تحديثات بالانتظار</span>`;
-            } else {
-                html = `<i class="fas fa-check-circle" style="color:var(--primary-color);"></i> <span>تمت المزامنة</span>`;
-            }
-            statusElements.forEach(el => el.innerHTML = html);
-        }
-
-        function initializeOfflineSync() {
-            window.addEventListener('online', syncQueuedUpdates);
-            window.addEventListener('offline', updateSyncStatusUI);
-            setInterval(syncQueuedUpdates, 15000);
-            syncQueuedUpdates();
         }
 
         let buildingsData = [], filteredData = [], dashboardFilteredData = [];
@@ -391,9 +301,9 @@
                 const data = snapshot.val();
                 buildingsData = data ? Object.keys(data).map(key => ({ ...data[key], db_key: key })) : [];
                 initFilterData();
-                // FIX: Removed call to updateHomepageTaskCounts for performance.
-                updateDashboardStats();
                 refreshAllViews();
+                updateHomepageTaskCounts();
+                updateDashboardStats();
             });
         }
         
@@ -471,12 +381,7 @@
                 actionsHTML = `<button class="btn btn-primary action-btn" onclick="confirmSiteVisit('${b.db_key}')"><i class="fas fa-check"></i> تأكيد الزيارة الميدانية</button>
                                <button class="btn btn-danger action-btn" onclick="openDetailsModal('${b.db_key}')"><i class="fas fa-exclamation-triangle"></i> الإبلاغ عن مشكلة</button>`;
             }
-            
-            const queue = getOfflineQueue();
-            const isPending = queue.some(item => item.data[`/buildings/${b.db_key}`]);
-            const pendingClass = isPending ? 'pending-sync' : '';
-
-            return `<div class="crn-item ${pendingClass}" data-db-key="${b.db_key}"><div class="crn-header"><span class="crn-id">${b.crn}</span>${statusBadge}</div><div class="crn-details"><div class="detail-item"><div class="detail-label"><i class="fas fa-globe-africa"></i> المحافظة</div><div>${b.governorate || 'N/A'}</div></div><div class="detail-item"><div class="detail-label"><i class="fas fa-city"></i> المدينة</div><div>${b.city || 'N/A'}</div></div><div class="detail-item"><div class="detail-label"><i class="fas fa-th-large"></i> القطاع</div><div>${b.sector || 'N/A'}</div></div><div class="detail-item"><div class="detail-label"><i class="fas fa-landmark"></i> البلوك</div><div>${b.block || 'N/A'}</div></div></div>${actionsHTML ? `<div class="actions">${actionsHTML}</div>` : ''}</div>`;
+            return `<div class="crn-item"><div class="crn-header"><span class="crn-id">${b.crn}</span>${statusBadge}</div><div class="crn-details"><div class="detail-item"><div class="detail-label"><i class="fas fa-globe-africa"></i> المحافظة</div><div>${b.governorate || 'N/A'}</div></div><div class="detail-item"><div class="detail-label"><i class="fas fa-city"></i> المدينة</div><div>${b.city || 'N/A'}</div></div><div class="detail-item"><div class="detail-label"><i class="fas fa-th-large"></i> القطاع</div><div>${b.sector || 'N/A'}</div></div><div class="detail-item"><div class="detail-label"><i class="fas fa-landmark"></i> البلوك</div><div>${b.block || 'N/A'}</div></div></div>${actionsHTML ? `<div class="actions">${actionsHTML}</div>` : ''}</div>`;
         }
         
         function applyDashboardFilters() {
@@ -524,7 +429,7 @@
             });
             tableBody.appendChild(fragment);
         }
-        
+
         function updatePaginationControls(view) {
             const prefix = view === 'main' ? '' : 'dashboard-';
             const pageInfo = document.getElementById(`${prefix}page-info`), prevBtn = document.getElementById(`${prefix}prev-btn`), nextBtn = document.getElementById(`${prefix}next-btn`);
@@ -534,7 +439,7 @@
             if (nextBtn) nextBtn.disabled = current >= total;
         }
         
-        window.showPage = (pageId, userType = "") => { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(pageId).classList.add('active'); if(userType) currentUserType = userType; if (pageId === 'main-page') { document.getElementById('user-type-label').textContent = userType === 'office' ? 'المطلوب من المكتب' : 'المطلوب من الموقع'; currentPage = 1; renderCRNList(); } else if (pageId === 'dashboard-page') { dashboardCurrentPage = 1; renderDashboard(); } };
+        window.showPage = (pageId, userType = "") => { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(pageId).classList.add('active'); currentUserType = userType; if (pageId === 'main-page') { document.getElementById('user-type-label').textContent = userType === 'office' ? 'المطلوب من المكتب' : 'المطلوب من الموقع'; currentPage = 1; renderCRNList(); } else if (pageId === 'dashboard-page') { dashboardCurrentPage = 1; renderDashboard(); } };
         window.updateCityFilter = () => { const gov = document.getElementById('governorate-filter').value; populateSelect('city-filter', gov ? cities[gov] || [] : []); window.updateSectorFilter(); };
         window.updateDashboardCityFilter = () => { const gov = document.getElementById('dashboard-governorate').value; populateSelect('dashboard-city', gov ? cities[gov] || [] : []); window.updateDashboardSectorFilter(); };
         window.updateSectorFilter = () => { const gov = document.getElementById('governorate-filter').value, city = document.getElementById('city-filter').value; populateSelect('sector-filter', (gov && city && sectors[`${gov}-${city}`]) || []); window.updateBlockFilter(); };
@@ -549,43 +454,25 @@
         window.nextDashboardPage = () => { if (dashboardCurrentPage < dashboardTotalPages) { dashboardCurrentPage++; renderDashboard(); } };
         window.previousDashboardPage = () => { if (dashboardCurrentPage > 1) { dashboardCurrentPage--; renderDashboard(); } };
         window.changeDashboardPageSize = () => { dashboardCurrentPage = 1; renderDashboard(); };
-
-        window.confirmOnMap = db_key => queueUpdate(db_key, { map_confirmed: true, map_timestamp: new Date().toISOString() });
-        window.sendToField = db_key => queueUpdate(db_key, { needs_field_visit: true });
-        window.confirmSiteVisit = db_key => queueUpdate(db_key, { site_confirmed: true, site_timestamp: new Date().toISOString() });
-
-        // FIX: Removed the homepage task count function entirely.
-
+        window.confirmOnMap = db_key => update(ref(database, `/buildings/${db_key}`), { map_confirmed: true, map_timestamp: new Date().toISOString() });
+        window.sendToField = db_key => update(ref(database, `/buildings/${db_key}`), { needs_field_visit: true });
+        window.confirmSiteVisit = db_key => update(ref(database, `/buildings/${db_key}`), { site_confirmed: true, site_timestamp: new Date().toISOString() });
+        window.updateHomepageTaskCounts = () => { const officeCountEl = document.getElementById('office-task-count'); if(officeCountEl) officeCountEl.textContent = buildingsData.filter(b => !b.map_confirmed && (!b.needs_field_visit || b.site_confirmed)).length; const fieldCountEl = document.getElementById('field-task-count'); if(fieldCountEl) fieldCountEl.textContent = buildingsData.filter(b => b.needs_field_visit && !b.site_confirmed && !b.site_issue_reported).length; };
         window.updateDashboardStats = () => { const el = id => document.getElementById(id); if(el('stat-total')) el('stat-total').textContent = buildingsData.length; if(el('stat-completed')) el('stat-completed').textContent = buildingsData.filter(b => b.map_confirmed).length; if(el('stat-at-field')) el('stat-at-field').textContent = buildingsData.filter(b => b.needs_field_visit && !b.site_confirmed && !b.site_issue_reported).length; if(el('stat-at-office')) el('stat-at-office').textContent = buildingsData.filter(b => !b.map_confirmed && (!b.needs_field_visit || b.site_confirmed) && !b.site_issue_reported).length; };
         
-        window.submitProblemDetails = () => {
-            const db_key = document.getElementById('modal-db-key-input').value, details = document.getElementById('problem-details-input').value;
-            if (!db_key || !details.trim()) { alert("الرجاء كتابة تفاصيل المشكلة."); return; }
-            queueUpdate(db_key, { site_issue_reported: true, site_issue_details: details, site_issue_timestamp: new Date().toISOString() });
-            closeDetailsModal();
-        };
-
-        window.resetBuildingStatus = (db_key, crn) => {
-            if (!confirm(`هل أنت متأكد من إعادة تعيين حالة المبنى ${crn}؟\nسيؤدي هذا إلى إزالة جميع التأكيدات (الموقع والخريطة) وإرجاع المهمة إلى المكتب.`)) return;
-            const updates = { needs_field_visit: null, site_confirmed: null, map_confirmed: null, site_issue_reported: null, site_issue_details: null, site_timestamp: null, map_timestamp: null, site_issue_timestamp: null };
-            update(ref(database, `/buildings/${db_key}`), updates).then(() => {
-                alert(`تمت إعادة تعيين حالة المبنى ${crn} بنجاح.`);
-            }).catch(e => alert(`فشل إعادة التعيين: ${e.message}`));
-        };
-
-        window.openDetailsModal = db_key => { document.getElementById('modal-db-key-input').value = db_key; document.getElementById('details-modal').style.display = 'flex'; };
-        window.closeDetailsModal = () => { document.getElementById('details-modal').style.display = 'none'; document.getElementById('problem-details-input').value = ''; document.getElementById('modal-db-key-input').value = ''; };
-
         window.handleNewDataUpload = event => {
             const file = event.target.files[0]; if (!file) return;
             document.getElementById('loading-overlay').style.display = 'flex';
             const reader = new FileReader();
             reader.onload = e => {
                 try {
+                    // FIX: Correctly define workbook before using it.
                     const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
                     const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                    
                     if (jsonData.length === 0) throw new Error('الملف فارغ.');
                     if (!jsonData[0].crn) throw new Error('الملف يجب أن يحتوي على عمود "crn".');
+                    
                     const updates = {}, allCrns = new Set(buildingsData.map(b => b.crn.toString()));
                     for (const row of jsonData) {
                         const crn = row.crn ? row.crn.toString() : null;
@@ -603,20 +490,25 @@
             };
             reader.readAsArrayBuffer(file);
         };
+
         window.handleStatusUpdateUpload = event => {
             const file = event.target.files[0]; if (!file) return;
             document.getElementById('loading-overlay').style.display = 'flex';
             const reader = new FileReader();
             reader.onload = e => {
                 try {
+                    // FIX: Correctly define workbook before using it.
                     const workbook = XLSX.read(new Uint8Array(e.target.result), {type: 'array'});
                     const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+
                     if (jsonData.length === 0) throw new Error('الملف فارغ.');
                     if (!jsonData[0].crn) throw new Error('الملف يجب أن يحتوي على عمود "crn" للمطابقة.');
+                    
                     const crnMap = new Map(buildingsData.map(b => [b.crn.toString(), b.db_key]));
                     proposedUpdates = [];
                     const notFoundCrns = [];
                     const validUpdateCols = ['needs_field_visit', 'site_confirmed', 'map_confirmed', 'site_issue_reported', 'site_issue_details'];
+
                     for (const row of jsonData) {
                         const crn = row.crn ? row.crn.toString() : null;
                         if (!crn) continue;
@@ -627,9 +519,14 @@
                             for (const col of validUpdateCols) {
                                 if (row[col] !== undefined) {
                                     hasUpdate = true;
-                                    if (typeof row[col] === 'boolean') { updateData[col] = row[col];
-                                    } else if (typeof row[col] === 'string') { updateData[col] = /true|نعم|1/i.test(row[col]);
-                                    } else { updateData[col] = row[col]; }
+                                    // Handle boolean-like values (true, "TRUE", "نعم", 1)
+                                    if (typeof row[col] === 'boolean') {
+                                        updateData[col] = row[col];
+                                    } else if (typeof row[col] === 'string') {
+                                        updateData[col] = /true|نعم|1/i.test(row[col]);
+                                    } else {
+                                        updateData[col] = row[col];
+                                    }
                                 }
                             }
                             if (hasUpdate) proposedUpdates.push({ db_key, updateData });
@@ -641,6 +538,7 @@
             };
             reader.readAsArrayBuffer(file);
         };
+
         window.showUpdatePreviewModal = (foundCount, notFound) => {
             const summaryEl = document.getElementById('update-preview-summary');
             let summaryHTML = `<p class="success"><i class="fas fa-check-circle"></i> تم العثور على <strong>${foundCount}</strong> سجل لتحديث حالتهم.</p>`;
@@ -650,9 +548,18 @@
             summaryEl.innerHTML = summaryHTML;
             document.getElementById('update-preview-modal').style.display = 'flex';
         };
-        window.closeUpdatePreviewModal = () => { document.getElementById('update-preview-modal').style.display = 'none'; proposedUpdates = []; };
+
+        window.closeUpdatePreviewModal = () => {
+            document.getElementById('update-preview-modal').style.display = 'none';
+            proposedUpdates = [];
+        };
+
         window.confirmUpdates = () => {
-            if (proposedUpdates.length === 0) { alert("لا توجد تحديثات لتنفيذها."); closeUpdatePreviewModal(); return; }
+            if (proposedUpdates.length === 0) {
+                alert("لا توجد تحديثات لتنفيذها.");
+                closeUpdatePreviewModal();
+                return;
+            }
             document.getElementById('loading-overlay').style.display = 'flex';
             const finalUpdates = {};
             proposedUpdates.forEach(item => {
@@ -668,6 +575,7 @@
                 closeUpdatePreviewModal();
             });
         };
+
         window.handleDeleteFilteredData = () => {
             if (dashboardFilteredData.length === 0) { alert("يرجى تحديد البيانات المراد حذفها باستخدام الفلاتر أولاً."); return; }
             if (!confirm(`هل أنت متأكد من حذف ${dashboardFilteredData.length} سجل/سجلات المحددة نهائياً؟`)) return;
@@ -678,6 +586,7 @@
                 alert(`تم حذف ${dashboardFilteredData.length} سجل بنجاح.`);
             }).catch(e => { alert(`فشل الحذف: ${e.message}`); }).finally(() => document.getElementById('loading-overlay').style.display = 'none');
         };
+
         window.exportCurrentView = () => {
             let dataToExport = [];
             const activePage = document.querySelector('.page.active');
@@ -689,7 +598,24 @@
             XLSX.utils.book_append_sheet(workbook, worksheet, "Data");
             XLSX.writeFile(workbook, "GasCRN_Export.xlsx");
         };
+        
         window.resetDashboardFilters = () => { ['dashboard-search', 'dashboard-governorate', 'dashboard-status-filter'].forEach(id => document.getElementById(id).value = ""); window.updateDashboardCityFilter(); dashboardCurrentPage = 1; renderDashboard(); };
+        window.openDetailsModal = db_key => { document.getElementById('modal-db-key-input').value = db_key; document.getElementById('details-modal').style.display = 'flex'; };
+        window.closeDetailsModal = () => { document.getElementById('details-modal').style.display = 'none'; document.getElementById('problem-details-input').value = ''; document.getElementById('modal-db-key-input').value = ''; };
+        window.submitProblemDetails = () => {
+            const db_key = document.getElementById('modal-db-key-input').value, details = document.getElementById('problem-details-input').value;
+            if (!db_key || !details.trim()) { alert("الرجاء كتابة تفاصيل المشكلة."); return; }
+            update(ref(database, `/buildings/${db_key}`), { site_issue_reported: true, site_issue_details: details, site_issue_timestamp: new Date().toISOString() })
+                .then(() => closeDetailsModal()).catch(() => alert("فشل الإبلاغ عن المشكلة."));
+        };
+        
+        window.resetBuildingStatus = (db_key, crn) => {
+            if (!confirm(`هل أنت متأكد من إعادة تعيين حالة المبنى ${crn}؟\nسيؤدي هذا إلى إزالة جميع التأكيدات (الموقع والخريطة) وإرجاع المهمة إلى المكتب.`)) return;
+            const updates = { needs_field_visit: null, site_confirmed: null, map_confirmed: null, site_issue_reported: null, site_issue_details: null, site_timestamp: null, map_timestamp: null, site_issue_timestamp: null };
+            update(ref(database, `/buildings/${db_key}`), updates).then(() => {
+                alert(`تمت إعادة تعيين حالة المبنى ${crn} بنجاح.`);
+            }).catch(e => alert(`فشل إعادة التعيين: ${e.message}`));
+        };
     </script>
 </body>
 </html>
