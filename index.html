@@ -251,16 +251,19 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const database = getDatabase(app);
-        try {
-    await enablePersistence(database);
-    console.log("Firebase persistence enabled");
-} catch (err) {
-    if (err.code == 'failed-precondition') {
-        console.warn("Persistence failed: multiple tabs open?");
-    } else if (err.code == 'unimplemented') {
-        console.warn("Persistence not available in this browser.");
+        enablePersistence(database)
+  .then(() => {
+    // تم تفعيل التخزين الدائم بنجاح
+    console.log("Firebase persistence enabled.");
+  })
+  .catch((err) => {
+    // حدث خطأ أثناء التفعيل
+    if (err.code === 'failed-precondition') {
+      console.warn("Persistence failed: A likely cause is that multiple tabs are open.");
+    } else if (err.code === 'unimplemented') {
+      console.warn("Persistence is not supported by the browser.");
     }
-}
+  });
         onAuthStateChanged(auth, user => {
             const loadingOverlay = document.getElementById('loading-overlay');
             const mainContainer = document.querySelector('.container');
