@@ -235,7 +235,10 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-        import { getDatabase, ref, onValue, update, push, get, enablePersistence } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+// السطر الأول: نستورد كل شيء ما عدا enablePersistence
+        import { getDatabase, ref, onValue, update, push, get } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+// السطر الثاني: نستورد enablePersistence من مسارها الخاص
+        import { enablePersistence } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js";
         
         const firebaseConfig = {
             apiKey: "AIzaSyCPcXicM19QkmAyHELSGcGCV57zrFvHH4Y",
