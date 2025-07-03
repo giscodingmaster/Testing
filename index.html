@@ -8,9 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-
     <style>
         :root {
             --primary-color: #00796B; --secondary-color: #FFC107; --danger-color: #D32F2F;
@@ -19,7 +17,7 @@
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background-color: var(--light-bg); color: var(--dark-text); font-family: var(--font-family); line-height: 1.6; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; }
+        .container { max-width: 1200px; margin: 0 auto; display: none; }
         .card { background: var(--white-bg); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04); padding: 25px; margin-bottom: 25px; }
         .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 24px; font-size: 16px; font-weight: 500; text-align: center; border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; text-decoration: none; }
         .btn-primary { background-color: var(--primary-color); color: white; }
@@ -93,7 +91,7 @@
 <body>
     <div id="loading-overlay" class="loading-overlay"><div class="loader"></div></div>
     
-    <div class="container" style="display: none;">
+    <div class="container">
         <!-- Home Page (for Office/Field users) -->
         <div id="home-page" class="page">
             <div class="header">
@@ -232,14 +230,12 @@
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-// السطر الأول: نستورد كل شيء ما عدا enablePersistence
-        import { getDatabase, ref, onValue, update, push, get } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
-// السطر الثاني: نستورد enablePersistence من مسارها الخاص
-        import { enablePersistence } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js";
-        
+    <!-- استيراد المكتبات بالطريقة الصحيحة لإصدار التوافقية -->
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
+
+    <script>
         const firebaseConfig = {
             apiKey: "AIzaSyCPcXicM19QkmAyHELSGcGCV57zrFvHH4Y",
             authDomain: "testing-6d021.firebaseapp.com",
@@ -250,29 +246,30 @@
             appId:"1:534942328377:web:70079093f1a6cd67568fe8",
             measurementId: "G-4W4HVQ5046"
         };
+        
+        firebase.initializeApp(firebaseConfig);
+        
+        try {
+            firebase.database().setPersistenceEnabled(true);
+            console.log("Firebase persistence enabled.");
+        } catch (err) {
+            if (err.code === 'failed-precondition') {
+                console.warn("Persistence failed: multiple tabs open or other issue.");
+            } else {
+                console.error("Persistence could not be enabled: ", err);
+            }
+        }
+        
+        const auth = firebase.auth();
+        const database = firebase.database();
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const database = getDatabase(app);
-        enablePersistence(database)
-  .then(() => {
-    // تم تفعيل التخزين الدائم بنجاح
-    console.log("Firebase persistence enabled.");
-  })
-  .catch((err) => {
-    // حدث خطأ أثناء التفعيل
-    if (err.code === 'failed-precondition') {
-      console.warn("Persistence failed: A likely cause is that multiple tabs are open.");
-    } else if (err.code === 'unimplemented') {
-      console.warn("Persistence is not supported by the browser.");
-    }
-  });
-        onAuthStateChanged(auth, user => {
+        auth.onAuthStateChanged(user => {
             const loadingOverlay = document.getElementById('loading-overlay');
             const mainContainer = document.querySelector('.container');
             if (user) {
-                get(ref(database, 'users/' + user.uid)).then((snapshot) => {
-                    const userRole = snapshot.exists() ? snapshot.val() : 'user';
+                database.ref('users/' + user.uid).get().then((snapshot) => {
+                    const userRoleData = snapshot.val();
+                    const userRole = userRoleData ? userRoleData : 'user';
                     loadingOverlay.style.display = 'none';
                     mainContainer.style.display = 'block';
                     configureUIForRole(userRole);
@@ -284,11 +281,13 @@
         });
 
         function configureUIForRole(role) {
-            document.querySelectorAll('.logout-btn').forEach(btn => btn.onclick = () => signOut(auth));
-            if (role === 'admin') showPage('dashboard-page');
-            else {
+            document.querySelectorAll('.logout-btn').forEach(btn => btn.onclick = () => auth.signOut());
+            if (role === 'admin') {
+                showPage('dashboard-page');
+            } else {
                 showPage('home-page');
-                const officeBtn = document.getElementById('office-btn'), fieldBtn = document.getElementById('field-btn');
+                const officeBtn = document.getElementById('office-btn');
+                const fieldBtn = document.getElementById('field-btn');
                 if (role === 'office') {
                     if (officeBtn) officeBtn.style.display = 'flex';
                     if (fieldBtn) fieldBtn.style.display = 'flex';
@@ -312,7 +311,7 @@
         let proposedUpdates = [];
         
         function loadInitialData() {
-            onValue(ref(database, '/buildings'), (snapshot) => {
+            database.ref('/buildings').on('value', (snapshot) => {
                 const data = snapshot.val();
                 buildingsData = data ? Object.keys(data).map(key => ({ ...data[key], db_key: key })) : [];
                 initFilterData();
@@ -469,9 +468,11 @@
         window.nextDashboardPage = () => { if (dashboardCurrentPage < dashboardTotalPages) { dashboardCurrentPage++; renderDashboard(); } };
         window.previousDashboardPage = () => { if (dashboardCurrentPage > 1) { dashboardCurrentPage--; renderDashboard(); } };
         window.changeDashboardPageSize = () => { dashboardCurrentPage = 1; renderDashboard(); };
-        window.confirmOnMap = db_key => update(ref(database, `/buildings/${db_key}`), { map_confirmed: true, map_timestamp: new Date().toISOString() });
-        window.sendToField = db_key => update(ref(database, `/buildings/${db_key}`), { needs_field_visit: true });
-        window.confirmSiteVisit = db_key => update(ref(database, `/buildings/${db_key}`), { site_confirmed: true, site_timestamp: new Date().toISOString() });
+        
+        window.confirmOnMap = db_key => database.ref(`/buildings/${db_key}`).update({ map_confirmed: true, map_timestamp: new Date().toISOString() });
+        window.sendToField = db_key => database.ref(`/buildings/${db_key}`).update({ needs_field_visit: true });
+        window.confirmSiteVisit = db_key => database.ref(`/buildings/${db_key}`).update({ site_confirmed: true, site_timestamp: new Date().toISOString() });
+        
         window.updateHomepageTaskCounts = () => { const officeCountEl = document.getElementById('office-task-count'); if(officeCountEl) officeCountEl.textContent = buildingsData.filter(b => !b.map_confirmed && (!b.needs_field_visit || b.site_confirmed)).length; const fieldCountEl = document.getElementById('field-task-count'); if(fieldCountEl) fieldCountEl.textContent = buildingsData.filter(b => b.needs_field_visit && !b.site_confirmed && !b.site_issue_reported).length; };
         window.updateDashboardStats = () => { const el = id => document.getElementById(id); if(el('stat-total')) el('stat-total').textContent = buildingsData.length; if(el('stat-completed')) el('stat-completed').textContent = buildingsData.filter(b => b.map_confirmed).length; if(el('stat-at-field')) el('stat-at-field').textContent = buildingsData.filter(b => b.needs_field_visit && !b.site_confirmed && !b.site_issue_reported).length; if(el('stat-at-office')) el('stat-at-office').textContent = buildingsData.filter(b => !b.map_confirmed && (!b.needs_field_visit || b.site_confirmed) && !b.site_issue_reported).length; };
         
@@ -481,7 +482,6 @@
             const reader = new FileReader();
             reader.onload = e => {
                 try {
-                    // FIX: Correctly define workbook before using it.
                     const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
                     const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
                     
@@ -492,13 +492,13 @@
                     for (const row of jsonData) {
                         const crn = row.crn ? row.crn.toString() : null;
                         if (!crn || allCrns.has(crn)) continue;
-                        const newKey = push(ref(database, '/buildings')).key;
+                        const newKey = database.ref('/buildings').push().key;
                         if (newKey) updates[`/buildings/${newKey}`] = row;
                     }
                     const count = Object.keys(updates).length;
                     if (count > 0) {
                         if (confirm(`تم العثور على ${count} سجل جديد. هل تريد إضافتها؟`)) {
-                            update(ref(database), updates).then(() => alert(`تمت إضافة ${count} سجل بنجاح.`));
+                            database.ref().update(updates).then(() => alert(`تمت إضافة ${count} سجل بنجاح.`));
                         } else alert("تم إلغاء الإضافة.");
                     } else alert("لم يتم العثور على سجلات جديدة (قد تكون كل السجلات موجودة بالفعل).");
                 } catch (error) { alert(`خطأ في معالجة الملف: ${error.message}`); } finally { document.getElementById('loading-overlay').style.display = 'none'; event.target.value = ''; }
@@ -512,7 +512,6 @@
             const reader = new FileReader();
             reader.onload = e => {
                 try {
-                    // FIX: Correctly define workbook before using it.
                     const workbook = XLSX.read(new Uint8Array(e.target.result), {type: 'array'});
                     const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
 
@@ -534,7 +533,6 @@
                             for (const col of validUpdateCols) {
                                 if (row[col] !== undefined) {
                                     hasUpdate = true;
-                                    // Handle boolean-like values (true, "TRUE", "نعم", 1)
                                     if (typeof row[col] === 'boolean') {
                                         updateData[col] = row[col];
                                     } else if (typeof row[col] === 'string') {
@@ -581,7 +579,7 @@
                 const currentData = buildingsData.find(b => b.db_key === item.db_key) || {};
                 finalUpdates[`/buildings/${item.db_key}`] = { ...currentData, ...item.updateData };
             });
-            update(ref(database), finalUpdates).then(() => {
+            database.ref().update(finalUpdates).then(() => {
                 alert(`تم تحديث ${proposedUpdates.length} سجل بنجاح.`);
             }).catch(e => {
                 alert(`فشل التحديث: ${e.message}`);
@@ -597,7 +595,7 @@
             document.getElementById('loading-overlay').style.display = 'flex';
             const updates = {};
             dashboardFilteredData.forEach(r => { updates['/buildings/' + r.db_key] = null; });
-            update(ref(database), updates).then(() => {
+            database.ref().update(updates).then(() => {
                 alert(`تم حذف ${dashboardFilteredData.length} سجل بنجاح.`);
             }).catch(e => { alert(`فشل الحذف: ${e.message}`); }).finally(() => document.getElementById('loading-overlay').style.display = 'none');
         };
@@ -617,17 +615,18 @@
         window.resetDashboardFilters = () => { ['dashboard-search', 'dashboard-governorate', 'dashboard-status-filter'].forEach(id => document.getElementById(id).value = ""); window.updateDashboardCityFilter(); dashboardCurrentPage = 1; renderDashboard(); };
         window.openDetailsModal = db_key => { document.getElementById('modal-db-key-input').value = db_key; document.getElementById('details-modal').style.display = 'flex'; };
         window.closeDetailsModal = () => { document.getElementById('details-modal').style.display = 'none'; document.getElementById('problem-details-input').value = ''; document.getElementById('modal-db-key-input').value = ''; };
+        
         window.submitProblemDetails = () => {
             const db_key = document.getElementById('modal-db-key-input').value, details = document.getElementById('problem-details-input').value;
             if (!db_key || !details.trim()) { alert("الرجاء كتابة تفاصيل المشكلة."); return; }
-            update(ref(database, `/buildings/${db_key}`), { site_issue_reported: true, site_issue_details: details, site_issue_timestamp: new Date().toISOString() })
+            database.ref(`/buildings/${db_key}`).update({ site_issue_reported: true, site_issue_details: details, site_issue_timestamp: new Date().toISOString() })
                 .then(() => closeDetailsModal()).catch(() => alert("فشل الإبلاغ عن المشكلة."));
         };
         
         window.resetBuildingStatus = (db_key, crn) => {
             if (!confirm(`هل أنت متأكد من إعادة تعيين حالة المبنى ${crn}؟\nسيؤدي هذا إلى إزالة جميع التأكيدات (الموقع والخريطة) وإرجاع المهمة إلى المكتب.`)) return;
             const updates = { needs_field_visit: null, site_confirmed: null, map_confirmed: null, site_issue_reported: null, site_issue_details: null, site_timestamp: null, map_timestamp: null, site_issue_timestamp: null };
-            update(ref(database, `/buildings/${db_key}`), updates).then(() => {
+            database.ref(`/buildings/${db_key}`).update(updates).then(() => {
                 alert(`تمت إعادة تعيين حالة المبنى ${crn} بنجاح.`);
             }).catch(e => alert(`فشل إعادة التعيين: ${e.message}`));
         };
